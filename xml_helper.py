@@ -4,6 +4,8 @@ import xml.dom.minidom as DOC
 import os
 
 # 从xml文件中提取bounding box信息, 格式为[[x_min, y_min, x_max, y_max, name]]
+
+
 def parse_xml(xml_path):
     '''
     输入：
@@ -11,13 +13,15 @@ def parse_xml(xml_path):
     输出：
         从xml文件中提取bounding box信息, 格式为[[x_min, y_min, x_max, y_max, name]]
     '''
-    tree = ET.parse(xml_path)		
+    tree = ET.parse(xml_path)
     root = tree.getroot()
     objs = root.findall('object')
     coords = list()
     for ix, obj in enumerate(objs):
-        name = obj.find('name').text
+        name = obj.find('name').text.strip()
         box = obj.find('bndbox')
+        if box is None:
+            return None
         x_min = int(box[0].text)
         y_min = int(box[1].text)
         x_max = int(box[2].text)
@@ -25,8 +29,10 @@ def parse_xml(xml_path):
         coords.append([x_min, y_min, x_max, y_max, name])
     return coords
 
-#将bounding box信息写入xml文件中, bouding box格式为[[x_min, y_min, x_max, y_max, name]]
-def generate_xml(img_name,coords,img_size,out_root_path):
+# 将bounding box信息写入xml文件中, bouding box格式为[[x_min, y_min, x_max, y_max, name]]
+
+
+def generate_xml(img_name, coords, img_size, out_root_path):
     '''
     输入：
         img_name：图片名称，如a.jpg
@@ -121,6 +127,6 @@ def generate_xml(img_name,coords,img_size,out_root_path):
         bndbox.appendChild(title)
 
     # 将DOM对象doc写入文件
-    f = open(os.path.join(out_root_path, img_name[:-4]+'.xml'),'w')
-    f.write(doc.toprettyxml(indent = ''))
+    f = open(os.path.join(out_root_path, img_name[:-4] + '.xml'), 'w')
+    f.write(doc.toprettyxml(indent=''))
     f.close()
